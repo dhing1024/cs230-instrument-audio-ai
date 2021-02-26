@@ -37,10 +37,13 @@ def normalize_audio (arr):
 def spectrogram_audio (arr, rate):
 	#TODO either use both channels as separate data points
 	#or convert to mono
-	sgram = librosa.stft(arr[:,0])
-	mag,_ = librosa.magphase(sgram)
-	mel = librosa.amplitude_to_db(librosa.feature.melspectrogram(S=mag, sr=rate))
-	return mel
+	sgram_0 = librosa.stft(arr[:,0])
+	mag_0,_ = librosa.magphase(sgram_0)
+	mel_0 = librosa.amplitude_to_db(librosa.feature.melspectrogram(S=mag_0, sr=rate))
+	sgram_1 = librosa.stft(arr[:,1])
+	mag_1,_ = librosa.magphase(sgram_1)
+	mel_1 = librosa.amplitude_to_db(librosa.feature.melspectrogram(S=mag_1, sr=rate))
+	return np.stack((mel_0, mel_1), axis=2)
 
 
 # Walk through all files (recursively) under pathname
@@ -50,28 +53,30 @@ def spectrogram_audio (arr, rate):
 def load_wav_dataset (pathname):
 	files_list = []
 	dataPath = os.path.abspath(pathname)
+	r = 0
 	for root, dir, files in os.walk(dataPath, topdown = True):
-		print(dir)
+		r += 1
+		print("Processing directory " + str(r))
 		count = 0
 		thresh = .1
 		for file in files:
 			if (count/len(files) > thresh):
-				print(thresh*100)
+				print(str(thresh*100) + "%")
 				thresh += .1
 			count += 1
 			# Examine only .wav files
 			if file [-4:] == ".wav":
 				rate, data = read_wav (root + '/' + file)
-				cats = np.zeros(shape=(NINSTRUMENTS+1, 1), dtype=np.int8)
+				cats = np.zeros(shape=(NINSTRUMENTS, 1), dtype=np.int8)
 				
 				# Determines the type of instrument from the file name
 				match = re.search(INST_PATTERN, file)
 				if (match):
 					cats[INSTRUMENTS[match.group(2)]] = 1
-				else:
+				#else:
 					#if this sample has no instrument in it (negative example)
 					#then we set the last index to 1
-					cats[NINSTRUMENTS] = 1
+					#cats[NINSTRUMENTS] = 1
 
 				dict = {
 					"file": file,
@@ -86,10 +91,16 @@ def load_wav_dataset (pathname):
 				}
 				
 				files_list.append(dict)
+		print("100%")
 	
 	# Returns the data as a Pandas DataFrame
 	df = pd.DataFrame(files_list)
 	return df
+
+def load_song(filename):
+	root = "Songs-TestingData"
+	rate, data = read_wav(root + "/" + filename)
+	return spectrogram_audio(normalize_audio (data), rate)
 
 # Loads the dataframe and generates new combinations of instruments
 def combine_dataset (df, num_combinations, combine_size):
