@@ -28,7 +28,6 @@ INSTRUMENTS = {
 
 NINSTRUMENTS = 11
 
-
 def normalize_audio (arr):
 	norm = np.linalg.norm(arr)
 	return arr / norm
