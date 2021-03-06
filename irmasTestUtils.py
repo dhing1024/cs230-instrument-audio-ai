@@ -5,13 +5,18 @@ import shutil
 from scipy.io.wavfile import read as read_wav
 from scipy.io.wavfile import write as write_wav
 import random
+import pandas as pd
+
 
 def parse_label_test_label_from_string (label):
-    "Converts a string label into a numpy label. Strips '[' and ']' if they exist"
+    """
+    Converts a string label into a numpy label. Strips '[' and ']' if they exist.
+    The string should consist of 0's and 1's
+    """
     
     new_label = label.lstrip('[').rstrip(']')
     as_int = [int(char) for char in new_label]
-    print(np.array(as_int).reshape(len(new_label), 1))
+    return np.array(as_int).reshape(len(new_label), 1)
     
     
 
@@ -85,4 +90,51 @@ def parse_irmas_testset (source, dest):
             write_wav (new_file_name, rate, cut_data)
             
     return
+
+
+
+
+
+def load_test_dataset (pathname):
+    """
+    Walk through the files (recursively) under pathname. For each file that is a .wav
+    copy its data into the list. Returns the full train set with labels as a Pandas
+    DataFrame
+    """
+    files_list = []
+    count = 0
+    dataPath = os.path.abspath(pathname)
+    for root, dir, files in os.walk(dataPath, topdown = True):
+        for file in files:
+            
+            if count % 500 == 0:
+                print("Count: ", count)
+            
+            # Examine only .wav files
+            if file[-4:] != ".wav":
+                continue
+            
+            rate, data = read_wav (root + '/' + file)
+            cats = np.zeros(shape=(utils.NINSTRUMENTS, 1), dtype=np.int8)
+
+            # Determines the type of instrument from the file name
+            cats = parse_label_test_label_from_string (file[:utils.NINSTRUMENTS + 1])
+            
+            dict = {
+                "file": file,
+                "dir": dir,
+                "root": root,
+                "rate": rate,
+                "data": utils.spectrogram_audio(utils.normalize_audio (data), rate),
+                "nframes": data.shape[0],
+                "nchannels": data.shape[1],
+                "label": cats,
+            }
+
+            files_list.append(dict)
+            count += 1
+
+    # Returns the data as a Pandas DataFrame
+    df = pd.DataFrame(files_list)
+    return df
     
