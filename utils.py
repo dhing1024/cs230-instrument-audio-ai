@@ -129,3 +129,11 @@ def combine_dataset (df, num_combinations, combine_size):
 			
 	df = pd.DataFrame (dataset);
 	return df
+
+
+def load_pickled_dataset(pathname):
+    """
+    Load a .pkl file containing the processed dataset
+    directly into a Pandas dataframe
+    """
+    return pd.read_pickle(pathname)

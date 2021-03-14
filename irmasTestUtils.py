@@ -41,6 +41,18 @@ def parse_irmas_test_label_from_txt (filename):
     return "".join(label)
 
 
+def generate_test_set(samp_shape, dataset):
+    samp_shape = dataset.data[0].shape
+    x, y = np.stack([sample_from_data(d, 259) for d in dataset.data]), np.stack(dataset.label)
+    x = x.reshape((-1,samp_shape[0],samp_shape[1],2))
+    return (x, y)
+
+
+def sample_from_data(data, window):
+    length = data.shape[1]
+    start = random.randint(0, length - window - 1)
+    return data[:,start:start + window - 1]
+
 
 def sample_from_audio (rate, data):
     length = data.shape[0]
