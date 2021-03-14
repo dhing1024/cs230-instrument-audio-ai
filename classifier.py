@@ -4,7 +4,6 @@ from tensorflow import keras
 from tensorflow.keras import layers
 import numpy as np
 
-
 NCHANNELS = 2
 NCLASSES = 11
 SAMPLE_SHAPE = (128,259)
@@ -12,17 +11,17 @@ def make_model():
 	model = tf.keras.Sequential()
 
 	model.add(tf.keras.layers.Conv2D(filters=8, kernel_size=4, strides=(2,2), padding='same', input_shape=(128,259,NCHANNELS), name="conv_1"))
-	#model.add(tf.keras.layers.BatchNormalization(axis=[1,2,3], name="bn_1"))
+	#model.add(tf.keras.layers.BatchNormalization(name="bn_1"))
 	model.add(tf.keras.layers.ReLU())
 	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), name="mpool_1"))
 
 	model.add(tf.keras.layers.Conv2D(filters=16, kernel_size=3, strides=(1,1), padding='valid', name="conv_2"))
-	#model.add(tf.keras.layers.BatchNormalization(axis=[1,2,3], name="bn_2"))
+	#model.add(tf.keras.layers.BatchNormalization(name="bn_2"))
 	model.add(tf.keras.layers.ReLU())
 	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), name="mpool_2"))
 
 	model.add(tf.keras.layers.Conv2D(filters=32, kernel_size=2, strides=(1,1), padding='valid', name="conv_3"))
-	#model.add(tf.keras.layers.BatchNormalization(axis=[1,2,3], name="bn_3"))
+	#model.add(tf.keras.layers.BatchNormalization(name="bn_3"))
 	model.add(tf.keras.layers.ReLU())
 	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), name="mpool_3"))
 

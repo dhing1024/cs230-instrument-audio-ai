@@ -134,4 +134,3 @@ def load_train_dataset (pathname):
     # Returns the data as a Pandas DataFrame
     df = pd.DataFrame(files_list)
     return df
-
