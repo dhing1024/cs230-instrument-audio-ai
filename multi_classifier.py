@@ -17,17 +17,17 @@ def make_model():
 		model = tf.keras.Sequential()
 
 		model.add(tf.keras.layers.Conv2D(trainable=False, filters=8, kernel_size=4, strides=(2,2), padding='same', input_shape=(128,259,NCHANNELS), name="conv_1"))
-		#model.add(tf.keras.layers.BatchNormalization(name="bn_1"))
+		model.add(tf.keras.layers.BatchNormalization(name="bn_1"))
 		model.add(tf.keras.layers.ReLU())
 		model.add(tf.keras.layers.MaxPooling2D(trainable=False, pool_size=(2,2), name="mpool_1"))
 
 		model.add(tf.keras.layers.Conv2D(trainable=False, filters=16, kernel_size=3, strides=(1,1), padding='valid', name="conv_2"))
-		#model.add(tf.keras.layers.BatchNormalization(name="bn_2"))
+		model.add(tf.keras.layers.BatchNormalization(name="bn_2"))
 		model.add(tf.keras.layers.ReLU())
 		model.add(tf.keras.layers.MaxPooling2D(trainable=False, pool_size=(2,2), name="mpool_2"))
 
 		model.add(tf.keras.layers.Conv2D(trainable=False, filters=32, kernel_size=2, strides=(1,1), padding='valid', name="conv_3"))
-		#model.add(tf.keras.layers.BatchNormalization(name="bn_3"))
+		model.add(tf.keras.layers.BatchNormalization(name="bn_3"))
 		model.add(tf.keras.layers.ReLU())
 		model.add(tf.keras.layers.MaxPooling2D(trainable=False, pool_size=(2,2), name="mpool_3"))
 
@@ -58,9 +58,12 @@ def train_model(models, x, y, batch_size=32, epochs=15):
 	"""
 	train the NCLASSES binarry classifiers
 	"""
+	history = []
 	for i in range(NCLASSES):
 		print("Training model:", i)
-		models[i].fit(x, y[i], batch_size=batch_size, epochs=epochs, class_weight=get_class_weights(i))
+		new_history = models[i].fit(x, y[i], batch_size=batch_size, epochs=epochs, class_weight=get_class_weights(i))
+		history.append (new_history.history)
+	return history
 
 
 def get_y_labels(dataframe_y, selected_class):
@@ -68,7 +71,7 @@ def get_y_labels(dataframe_y, selected_class):
 	Takes in the multiclass y labels and converts it into a set of single class labels
 	such that the label is 1 if the selected class was 1 and 0 otherwise
 	"""
-	return dataframe_y[:,selected_class]
+	return dataframe_y[:,selected_class,0]
 
 def get_class_weights(selected_class):
 	"""

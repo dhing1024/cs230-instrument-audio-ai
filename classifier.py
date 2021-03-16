@@ -11,17 +11,17 @@ def make_model():
 	model = tf.keras.Sequential()
 
 	model.add(tf.keras.layers.Conv2D(filters=8, kernel_size=4, strides=(2,2), padding='same', input_shape=(128,259,NCHANNELS), name="conv_1"))
-	#model.add(tf.keras.layers.BatchNormalization(name="bn_1"))
+	model.add(tf.keras.layers.BatchNormalization(name="bn_1"))
 	model.add(tf.keras.layers.ReLU())
 	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), name="mpool_1"))
 
 	model.add(tf.keras.layers.Conv2D(filters=16, kernel_size=3, strides=(1,1), padding='valid', name="conv_2"))
-	#model.add(tf.keras.layers.BatchNormalization(name="bn_2"))
+	model.add(tf.keras.layers.BatchNormalization(name="bn_2"))
 	model.add(tf.keras.layers.ReLU())
 	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), name="mpool_2"))
 
 	model.add(tf.keras.layers.Conv2D(filters=32, kernel_size=2, strides=(1,1), padding='valid', name="conv_3"))
-	#model.add(tf.keras.layers.BatchNormalization(name="bn_3"))
+	model.add(tf.keras.layers.BatchNormalization(name="bn_3"))
 	model.add(tf.keras.layers.ReLU())
 	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), name="mpool_3"))
 
@@ -38,8 +38,7 @@ def make_model():
 def train_model(model, train_set, batch_size=32, epochs=15):
 	x, y = np.stack(train_set.data), np.stack(train_set.label)
 	x = x.reshape((-1,SAMPLE_SHAPE[0],SAMPLE_SHAPE[1],2))
-
-	model.fit(x, y, batch_size=batch_size, epochs=epochs)
+	return model.fit(x, y, batch_size=batch_size, epochs=epochs)
 
 
 def get_accuracy(model, dataset):
