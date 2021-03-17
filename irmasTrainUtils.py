@@ -35,7 +35,7 @@ def augment_song(rate, data):
 
 
 
-def parse_irmas_trainset (source, dest):
+def parse_irmas_trainset (source, dest, percentage=.9):
     """
     Walks recursively at SOURCE directory (relative to the current directory) to crawl all
     .wav files. Copies all files from SOURCE to DEST. Additionally, this function performs
@@ -54,12 +54,17 @@ def parse_irmas_trainset (source, dest):
     # Create the new directory if it doesn't exist
     if not os.path.isdir(os.path.abspath(dest)):
         os.makedirs(os.path.abspath(dest))
+    if not os.path.isdir(os.path.abspath(dest + "/Train")):
+        os.makedirs(os.path.abspath(dest + "/Train"))
+    if not os.path.isdir(os.path.abspath(dest + "/Validation")):
+        os.makedirs(os.path.abspath(dest + "/Validation"))
     
     # Crawl starting at SOURCE recursively
     r = 0
     for root, dir, files in os.walk(dataPath, topdown = True):
         r += 1
         print("Processing directory: " + str(r))
+        i = 0
         for file in files:
 
             # Examine only .wav files
@@ -78,10 +83,15 @@ def parse_irmas_trainset (source, dest):
             augmentations = augment_song(rate, data)
             
             # Write the song to DEST
+            destDir = dest + "/Train"
+            if i > len(files) * percentage:
+                destDir = dest + "/Validation"
+
             count = 0
             for augmentation in augmentations:
-                write_wav (dest + '/' + file[:-4] + '[' + str(count) + '].wav', rate, augmentation)
+                write_wav (destDir + '/' + file[:-4] + '[' + str(count) + '].wav', rate, augmentation)
                 count += 1
+            i += 1
     
     return
 
