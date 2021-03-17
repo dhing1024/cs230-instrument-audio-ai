@@ -5,6 +5,7 @@ import utils
 from scipy.io.wavfile import read as read_wav
 from scipy.io.wavfile import write as write_wav
 import re
+import random
 
 
 def parse_label_train_label_from_string (label):
@@ -45,7 +46,7 @@ def parse_irmas_trainset (source, dest, percentage=.9):
     
     Example Usage: irmasTestUtils.parse_irmas_trainset("../IRMAS-TrainingData", "../Preprocessed_Trainset")
     """
-    
+    random.seed (0)
     files_list = []
     
     # Load the source datapath
@@ -84,7 +85,7 @@ def parse_irmas_trainset (source, dest, percentage=.9):
             
             # Write the song to DEST
             destDir = dest + "/Train"
-            if i > len(files) * percentage:
+            if random.random () > 0.9:
                 destDir = dest + "/Validation"
 
             count = 0
