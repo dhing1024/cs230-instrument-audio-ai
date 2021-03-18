@@ -25,9 +25,16 @@ def make_model():
 	model.add(tf.keras.layers.ReLU())
 	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), name="mpool_3"))
 
+	model.add(tf.keras.layers.Conv2D(filters=64, kernel_size=2, strides=(1,1), padding='valid', name="conv_4"))
+	model.add(tf.keras.layers.BatchNormalization(name="bn_4"))
+	model.add(tf.keras.layers.ReLU())
+	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), name="mpool_4"))
+
 	model.add(tf.keras.layers.Flatten())
-	model.add(tf.keras.layers.Dense(500, activation='relu', name="fc_4"))
-	model.add(tf.keras.layers.Dense(NCLASSES, activation=None, name="fc_5"))
+	model.add(tf.keras.layers.Dropout(rate = 0.25))
+	model.add(tf.keras.layers.Dense(500, activation='relu', kernel_regularizer='l2', name="fc_5"))
+	model.add(tf.keras.layers.Dropout(rate = 0.5))
+	model.add(tf.keras.layers.Dense(NCLASSES, activation=None, kernel_regularizer='l2', name="fc_6"))
 	model.add(tf.keras.layers.Softmax())
 
 	model.compile(optimizer='adam', loss=tf.keras.losses.CategoricalCrossentropy())
