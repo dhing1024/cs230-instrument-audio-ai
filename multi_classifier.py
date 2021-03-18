@@ -38,9 +38,9 @@ def make_model():
 
 		model.add(tf.keras.layers.Flatten())
 		model.add(tf.keras.layers.Dropout(rate = 0.25))
-		model.add(tf.keras.layers.Dense(500, activation='relu', kernel_regularizer='l2', name="fc_5"))
+		model.add(tf.keras.layers.Dense(500, trainable=False, activation='relu', kernel_regularizer='l2', name="fc_5"))
 		model.add(tf.keras.layers.Dropout(rate = 0.5))
-		model.add(tf.keras.layers.Dense(NCLASSES, activation=None, kernel_regularizer='l2', name="fc_6"))
+		model.add(tf.keras.layers.Dense(NCLASSES, trainable=False, activation=None, kernel_regularizer='l2', name="fc_6"))
 		model.add(tf.keras.layers.Dense(1, activation='sigmoid', name="fc_7"))
 
 		model.compile(optimizer='adam', loss=tf.keras.losses.BinaryCrossentropy())
