@@ -53,6 +53,7 @@ def get_accuracy(model, dataset):
 	x = x.reshape((-1,SAMPLE_SHAPE[0],SAMPLE_SHAPE[1],2))
 
 	preds = np.argmax(model.predict(x), axis=1).reshape(x.shape[0], 1)
+	print(preds[0])
 	true = np.argmax(y, axis=1)
 	acc = np.sum((preds == true)*np.ones(preds.shape))/x.shape[0]
 

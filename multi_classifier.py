@@ -10,104 +10,100 @@ NCLASSES = 11
 SAMPLE_SHAPE = (128,259)
 def make_model():
 	"""
-	Creates a list of NCLASSES binary classification models, each one identical
+	Creates a multi-classifier model
 	"""
-	models = []
-	for i in range(NCLASSES):
-		model = tf.keras.Sequential()
 
-		model.add(tf.keras.layers.Conv2D(trainable=False, filters=8, kernel_size=4, strides=(2,2), padding='same', input_shape=(128,259,NCHANNELS), name="conv_1"))
-		model.add(tf.keras.layers.BatchNormalization(name="bn_1"))
-		model.add(tf.keras.layers.ReLU())
-		model.add(tf.keras.layers.MaxPooling2D(trainable=False, pool_size=(2,2), name="mpool_1"))
+	model = tf.keras.Sequential()
 
-		model.add(tf.keras.layers.Conv2D(trainable=False, filters=16, kernel_size=3, strides=(1,1), padding='valid', name="conv_2"))
-		model.add(tf.keras.layers.BatchNormalization(name="bn_2"))
-		model.add(tf.keras.layers.ReLU())
-		model.add(tf.keras.layers.MaxPooling2D(trainable=False, pool_size=(2,2), name="mpool_2"))
+	model.add(tf.keras.layers.Conv2D(filters=8, trainable=True, kernel_size=4, strides=(2,2), padding='same', input_shape=(128,259,NCHANNELS), name="conv_1"))
+	model.add(tf.keras.layers.BatchNormalization(trainable=True, name="bn_1"))
+	model.add(tf.keras.layers.ReLU())
+	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), trainable=True, name="mpool_1"))
 
-		model.add(tf.keras.layers.Conv2D(trainable=False, filters=32, kernel_size=2, strides=(1,1), padding='valid', name="conv_3"))
-		model.add(tf.keras.layers.BatchNormalization(name="bn_3"))
-		model.add(tf.keras.layers.ReLU())
-		model.add(tf.keras.layers.MaxPooling2D(trainable=False, pool_size=(2,2), name="mpool_3"))
+	model.add(tf.keras.layers.Conv2D(filters=16, trainable=True, kernel_size=3, strides=(1,1), padding='valid', name="conv_2"))
+	model.add(tf.keras.layers.BatchNormalization(trainable=True, name="bn_2"))
+	model.add(tf.keras.layers.ReLU())
+	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), trainable=True, name="mpool_2"))
 
-		model.add(tf.keras.layers.Conv2D(filters=64, kernel_size=2, strides=(1,1), padding='valid', name="conv_4"))
-		model.add(tf.keras.layers.BatchNormalization(name="bn_4"))
-		model.add(tf.keras.layers.ReLU())
-		model.add(tf.keras.layers.MaxPooling2D(trainable=False, pool_size=(2,2), name="mpool_4"))
+	model.add(tf.keras.layers.Conv2D(filters=32, trainable=True, kernel_size=2, strides=(1,1), padding='valid', name="conv_3"))
+	model.add(tf.keras.layers.BatchNormalization(trainable=True, name="bn_3"))
+	model.add(tf.keras.layers.ReLU())
+	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), trainable=True, name="mpool_3"))
 
-		model.add(tf.keras.layers.Flatten())
-		model.add(tf.keras.layers.Dropout(rate = 0.25))
-		model.add(tf.keras.layers.Dense(500, trainable=False, activation='relu', kernel_regularizer='l2', name="fc_5"))
-		model.add(tf.keras.layers.Dropout(rate = 0.5))
-		model.add(tf.keras.layers.Dense(NCLASSES, trainable=False, activation=None, kernel_regularizer='l2', name="fc_6"))
-		model.add(tf.keras.layers.Dense(1, activation='sigmoid', name="fc_7"))
+	model.add(tf.keras.layers.Conv2D(filters=64, trainable=True, kernel_size=2, strides=(1,1), padding='valid', name="conv_4"))
+	model.add(tf.keras.layers.BatchNormalization(trainable=True, name="bn_4"))
+	model.add(tf.keras.layers.ReLU())
+	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), trainable=True, name="mpool_4"))
 
-		model.compile(optimizer='adam', loss=tf.keras.losses.BinaryCrossentropy())
-		models.append(model)
+	model.add(tf.keras.layers.Flatten())
+	model.add(tf.keras.layers.Dropout(rate = 0.25))
+	model.add(tf.keras.layers.Dense(500, trainable=True, activation='relu', kernel_regularizer='l2', name="fc_5"))
+	model.add(tf.keras.layers.Dropout(rate = 0.5))
+	model.add(tf.keras.layers.Dense(NCLASSES, trainable=True, activation=None, kernel_regularizer='l2', name="fc_6"))
 
-	return models
+	model.add(tf.keras.layers.Dense(NCLASSES, activation='relu', name="fc_new_1"))
+	model.add(tf.keras.layers.Dense(NCLASSES, activation='relu', name="fc_new_2"))
+	model.add(tf.keras.layers.Dense(NCLASSES, activation='sigmoid', name="fc_new_3"))
+
+	model.compile(optimizer='adam', loss=tf.keras.losses.CategoricalCrossentropy())
+
+	return model
 
 def process_dataframe(dataframe):
 	"""
 	Convert the pandas dataframe into numpy arrays for training
 	broken out so that the jupyter notebook doesnt have to do this every flipping time i need to edit the model
 	"""
-	x, dataframe_y = np.stack(dataframe.data), np.stack(dataframe.label)
+	x, y = np.stack(dataframe.data), np.stack(dataframe.label)
 	x = x.reshape((-1,SAMPLE_SHAPE[0],SAMPLE_SHAPE[1],2))
-	ys = []
-	for i in range(NCLASSES):
-		ys.append(get_y_labels(dataframe_y, i))
 
-	return x, ys
+	return x, y
 
-def train_model(models, x, y, batch_size=32, epochs=15):
+def train_model(model, train_set, batch_size=32, epochs=15):
 	"""
-	train the NCLASSES binarry classifiers
+	train the multi-classifier model
 	"""
-	history = []
-	for i in range(NCLASSES):
-		print("Training model:", i)
-		new_history = models[i].fit(x, y[i], batch_size=batch_size, epochs=epochs, class_weight=get_class_weights(i))
-		history.append (new_history.history)
-	return history
+	x, y = np.stack(train_set.data), np.stack(train_set.label)
+	x = x.reshape((-1,SAMPLE_SHAPE[0],SAMPLE_SHAPE[1],2))
+	model.fit(x, y, batch_size=batch_size, epochs=epochs)
 
 
-def get_y_labels(dataframe_y, selected_class):
+def intersection_over_union(vec1, vec2):
 	"""
-	Takes in the multiclass y labels and converts it into a set of single class labels
-	such that the label is 1 if the selected class was 1 and 0 otherwise
+	takes in two vectors containing only 0's or 1's
+	returns the number of categories in which both vectors have a 1 divided by the total number of categories that have a 1 in either vector
 	"""
-	return dataframe_y[:,selected_class,0]
+	vec1 = np.squeeze(vec1)
+	vec2 = np.squeeze(vec2)
+	assert(vec1.shape == vec2.shape)
 
-def get_class_weights(selected_class):
-	"""
-	Upweight the positive class, since for all 11 models we will have 10 negative examples for every 1 positive
-	"""
-	return {0:1.0, 1:10.0}
+	union = np.sum(vec1 + vec2 > 0)
+	intersection = np.sum(vec1 + vec2 > 1)
 
-"""
-def get_accuracy(models, dataset):
+	return intersection/union
+
+def get_accuracy(model, dataset):
+	"""
+	calculates IoU accuracy for the model
+	can be used on the validation set or the test set
+	"""
 	x, y = np.stack(dataset.data), np.stack(dataset.label)
 	x = x.reshape((-1,SAMPLE_SHAPE[0],SAMPLE_SHAPE[1],2))
+	y = (y > 0.5)*1
 
-	preds = [models[i].predict(x) for i in range(NCLASSES)]
-	true = np.argmax(y, axis=1)
-	acc = np.sum((preds == true)*np.ones(preds.shape))/x.shape[0]
+	preds = model.predict(x)
+	acc = [intersection_over_union(preds[i], y[i]) for i in range(len(preds))]
+	acc = np.mean(acc)
 
 	return acc
 
 
-def predict_song(model, song_data, stride=50):
-	#"convolves" the model along an entire song
-	#better to have the stride bigger, 259 samples is 3 seconds or so
-	length = song_data.shape[1]
-	n_iters = int((length - SAMPLE_SHAPE[1])/stride)
-	output = np.zeros((n_iters, NCLASSES))
-	for i in range(n_iters):
-		segment = song_data[:,i*stride:i*stride + SAMPLE_SHAPE[1],:]
-		segment = segment.reshape((1, SAMPLE_SHAPE[0], SAMPLE_SHAPE[1], NCHANNELS))
-		output[i] = model.predict(segment)
-
-	return output
-"""
+def load_weights(model, weighted_model):
+	"""
+	loads weights by layer name from a previously trained model into a new model
+	will pass over layers that don't have matching names
+	"""
+	for layer in weighted_model.layers:
+		for v in range(len(model.layers)):
+			if model.layers[v].name == layer.name:
+				model.layers[v].set_weights(layer.get_weights())

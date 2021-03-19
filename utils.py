@@ -34,8 +34,6 @@ def normalize_audio (arr):
 
 
 def spectrogram_audio (arr, rate):
-	#TODO either use both channels as separate data points
-	#or convert to mono
 	sgram_0 = librosa.stft(arr[:,0])
 	mag_0,_ = librosa.magphase(sgram_0)
 	mel_0 = librosa.amplitude_to_db(librosa.feature.melspectrogram(S=mag_0, sr=rate))
