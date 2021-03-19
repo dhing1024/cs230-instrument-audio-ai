@@ -7,6 +7,7 @@ import numpy as np
 
 NCHANNELS = 2
 NCLASSES = 11
+KTRAINABLE = False
 SAMPLE_SHAPE = (128,259)
 def make_model():
 	"""
@@ -15,31 +16,31 @@ def make_model():
 
 	model = tf.keras.Sequential()
 
-	model.add(tf.keras.layers.Conv2D(filters=8, trainable=True, kernel_size=4, strides=(2,2), padding='same', input_shape=(128,259,NCHANNELS), name="conv_1"))
-	model.add(tf.keras.layers.BatchNormalization(trainable=True, name="bn_1"))
+	model.add(tf.keras.layers.Conv2D(filters=8, trainable=KTRAINABLE, kernel_size=4, strides=(2,2), padding='same', input_shape=(128,259,NCHANNELS), name="conv_1"))
+	model.add(tf.keras.layers.BatchNormalization(trainable=KTRAINABLE, name="bn_1"))
 	model.add(tf.keras.layers.ReLU())
-	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), trainable=True, name="mpool_1"))
+	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), trainable=KTRAINABLE, name="mpool_1"))
 
-	model.add(tf.keras.layers.Conv2D(filters=16, trainable=True, kernel_size=3, strides=(1,1), padding='valid', name="conv_2"))
-	model.add(tf.keras.layers.BatchNormalization(trainable=True, name="bn_2"))
+	model.add(tf.keras.layers.Conv2D(filters=16, trainable=KTRAINABLE, kernel_size=3, strides=(1,1), padding='valid', name="conv_2"))
+	model.add(tf.keras.layers.BatchNormalization(trainable=KTRAINABLE, name="bn_2"))
 	model.add(tf.keras.layers.ReLU())
-	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), trainable=True, name="mpool_2"))
+	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), trainable=KTRAINABLE, name="mpool_2"))
 
-	model.add(tf.keras.layers.Conv2D(filters=32, trainable=True, kernel_size=2, strides=(1,1), padding='valid', name="conv_3"))
-	model.add(tf.keras.layers.BatchNormalization(trainable=True, name="bn_3"))
+	model.add(tf.keras.layers.Conv2D(filters=32, trainable=KTRAINABLE, kernel_size=2, strides=(1,1), padding='valid', name="conv_3"))
+	model.add(tf.keras.layers.BatchNormalization(trainable=KTRAINABLE, name="bn_3"))
 	model.add(tf.keras.layers.ReLU())
-	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), trainable=True, name="mpool_3"))
+	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), trainable=KTRAINABLE, name="mpool_3"))
 
-	model.add(tf.keras.layers.Conv2D(filters=64, trainable=True, kernel_size=2, strides=(1,1), padding='valid', name="conv_4"))
-	model.add(tf.keras.layers.BatchNormalization(trainable=True, name="bn_4"))
+	model.add(tf.keras.layers.Conv2D(filters=64, trainable=KTRAINABLE, kernel_size=2, strides=(1,1), padding='valid', name="conv_4"))
+	model.add(tf.keras.layers.BatchNormalization(trainable=KTRAINABLE, name="bn_4"))
 	model.add(tf.keras.layers.ReLU())
-	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), trainable=True, name="mpool_4"))
+	model.add(tf.keras.layers.MaxPooling2D(pool_size=(2,2), trainable=KTRAINABLE, name="mpool_4"))
 
 	model.add(tf.keras.layers.Flatten())
 	model.add(tf.keras.layers.Dropout(rate = 0.25))
-	model.add(tf.keras.layers.Dense(500, trainable=True, activation='relu', kernel_regularizer='l2', name="fc_5"))
+	model.add(tf.keras.layers.Dense(500, trainable=KTRAINABLE, activation='relu', kernel_regularizer='l2', name="fc_5"))
 	model.add(tf.keras.layers.Dropout(rate = 0.5))
-	model.add(tf.keras.layers.Dense(NCLASSES, trainable=True, activation=None, kernel_regularizer='l2', name="fc_6"))
+	model.add(tf.keras.layers.Dense(NCLASSES, trainable=KTRAINABLE, activation=None, kernel_regularizer='l2', name="fc_6"))
 
 	model.add(tf.keras.layers.Dense(NCLASSES, activation='relu', name="fc_new_1"))
 	model.add(tf.keras.layers.Dense(NCLASSES, activation='relu', name="fc_new_2"))
@@ -89,9 +90,9 @@ def get_accuracy(model, dataset):
 	"""
 	x, y = np.stack(dataset.data), np.stack(dataset.label)
 	x = x.reshape((-1,SAMPLE_SHAPE[0],SAMPLE_SHAPE[1],2))
-	y = (y > 0.5)*1
 
 	preds = model.predict(x)
+	preds = (preds > 0.5)*1
 	acc = [intersection_over_union(preds[i], y[i]) for i in range(len(preds))]
 	acc = np.mean(acc)
 
