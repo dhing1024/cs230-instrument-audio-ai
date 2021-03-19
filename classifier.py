@@ -8,6 +8,10 @@ NCHANNELS = 2
 NCLASSES = 11
 SAMPLE_SHAPE = (128,259)
 def make_model():
+	"""
+	Generates a single-class model
+	"""
+
 	model = tf.keras.Sequential()
 
 	model.add(tf.keras.layers.Conv2D(filters=8, kernel_size=4, strides=(2,2), padding='same', input_shape=(128,259,NCHANNELS), name="conv_1"))
@@ -43,12 +47,21 @@ def make_model():
 
 
 def train_model(model, train_set, batch_size=32, epochs=15):
+	"""
+	Runs model.fit on the data and labels
+	"""
+
 	x, y = np.stack(train_set.data), np.stack(train_set.label)
 	x = x.reshape((-1,SAMPLE_SHAPE[0],SAMPLE_SHAPE[1],2))
 	return model.fit(x, y, batch_size=batch_size, epochs=epochs)
 
 
 def get_accuracy(model, dataset):
+	"""
+	Calculates the accuracy of the model. Dataset can be the pandas dataframe representing the
+	train set or validation set
+	"""
+
 	x, y = np.stack(dataset.data), np.stack(dataset.label)
 	x = x.reshape((-1,SAMPLE_SHAPE[0],SAMPLE_SHAPE[1],2))
 
@@ -61,6 +74,10 @@ def get_accuracy(model, dataset):
 
 
 def predict_song(model, song_data, stride=50):
+	"""
+	Runs model.predict to make predictions
+	"""
+
 	#"convolves" the model along an entire song
 	#better to have the stride bigger, 259 samples is 3 seconds or so
 	length = song_data.shape[1]
